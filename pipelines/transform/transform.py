@@ -2,6 +2,7 @@ import pandas as pd
 import geopandas as gpd
 from pathlib import Path
 import numpy as np
+from functools import lru_cache
 
 LOR_URL = (
     "https://gdi.berlin.de/services/wfs/lor_2019"
@@ -24,7 +25,7 @@ BEZIRKSFLAECHEN = pd.DataFrame({
 
 DATA_DIR = Path("data")
 
-
+@lru_cache(maxsize=None)
 def load_sozialindex_mit_Gesamtbewasserung_agg() -> pd.DataFrame:
     df = pd.read_csv(
         DATA_DIR / "sozialindex_mit_Gesamtbewässerung.csv",
@@ -34,11 +35,13 @@ def load_sozialindex_mit_Gesamtbewasserung_agg() -> pd.DataFrame:
     df["GESIx_2022"] = pd.to_numeric(df["GESIx_2022"], errors="coerce")
     return df 
 
+@lru_cache(maxsize=None)
 def load_kpi() -> pd.DataFrame:
     return pd.read_csv(
         DATA_DIR / "KPI.csv", sep=";", encoding="utf-8"
     )
 
+@lru_cache(maxsize=None)
 def load_lor() -> gpd.GeoDataFrame: 
     gdf = gpd.read_file(LOR_URL)
     gdf = gdf[["bzr_id", "bzr_name", "geometry"]]
@@ -46,6 +49,7 @@ def load_lor() -> gpd.GeoDataFrame:
     gdf = gdf.to_crs(epsg=4326)
     return gdf
 
+@lru_cache(maxsize=None)
 def load_wetterdaten()-> pd.DataFrame:
     df = pd.read_csv(DATA_DIR / "combined_monthly_daten_2020_2024_minimal.csv", sep=";", encoding="utf-8", decimal=",")
     df["date"] =  pd.to_datetime(df["MESS_DATUM_BEGINN"], format="%d.%m.%Y")
@@ -59,6 +63,7 @@ def load_wetterdaten()-> pd.DataFrame:
         ["date", "year", "month", "niederschlag", "temp_avg"]
     ]
 
+@lru_cache(maxsize=None)
 def load_df_merged()-> pd.DataFrame:
     df = pd.read_csv(DATA_DIR / "df_merged_final.csv", sep=";", encoding="utf-8", decimal=",")
     df["pflanzjahr"] = pd.to_numeric(df["pflanzjahr"], errors="coerce")
@@ -66,20 +71,24 @@ def load_df_merged()-> pd.DataFrame:
     df["baumalter"] = pd.Timestamp.now().year - df["pflanzjahr"]
     return df
 
+@lru_cache(maxsize=None)
 def load_df_merged_mit_lor_sum() -> gpd.GeoDataFrame:
     return gpd.read_file(DATA_DIR /"df_merged_mit_lor_und_sum.geojson")
 
 def load_df_merged_unique(df: pd.DataFrame) -> pd.DataFrame:
     return df.drop_duplicates(subset="gisid")
 
+@lru_cache(maxsize=None)
 def load_pumpen_mit_bezirk() -> gpd.GeoDataFrame:
     df = gpd.read_file(DATA_DIR / "pumpen_mit_bezirk_minimal.geojson")
     df["label_text"] = df["id"].astype(str).where(df["id"].notna(), "Unbekannt")
     return df
 
+@lru_cache(maxsize=None)
 def load_pumpen_mit_lor() -> gpd.GeoDataFrame:
     return gpd.read_file(DATA_DIR / "pumpen_mit_lor.geojson")
 
+@lru_cache(maxsize=None)
 def load_df_merged_sum_distanz_umkreis_pump_ok_lor() -> pd.DataFrame:
     df = pd.read_csv(
         DATA_DIR / "df_merged_sum_mit_distanzen_mit_umkreis_gesamter_Baumbestand_nur_Pumpen_ok_lor.csv",
@@ -92,15 +101,19 @@ def load_df_merged_sum_distanz_umkreis_pump_ok_lor() -> pd.DataFrame:
     )
     return df.dropna(subset=["lat", "lng"])
 
-def load_df_merged_sum_distanz_clean(df):
+
+def transform_df_merged_sum_distanz_clean(df):
     return df.dropna(subset=["timestamp"])
 
-def load_df_merged_clean(df):
+
+def transform_df_merged_clean(df):
     return df.dropna(subset=["bezirk", "timestamp", "gattung_deutsch"])
 
+@lru_cache(maxsize=None)
 def load_sozialindex():
     return pd.read_csv("data/sozialindex.csv", sep=";", encoding="utf-8")
 
+@lru_cache(maxsize=None)
 def load_bezirksgrenzen():
     return gpd.read_file("data/bezirksgrenzen.geojson")
 
@@ -193,13 +206,15 @@ def transform_merged_for_rating(df: pd.DataFrame) -> pd.DataFrame:
     df["gesamt_bewaesserung_rating"] = np.select(conditions, choices, default="Niedrig")
     return df
 
+@lru_cache(maxsize=None)
 def load_einwohnerGiessm():
     return pd.read_csv("data/Einwohner_Giessmenge_joined.csv", sep=";", encoding="utf-8")
 
 
+@lru_cache(maxsize=None)
 def load_einwohner():
     return pd.read_csv("data/GesamteEinwohnerzahlNachBezirk.csv", sep=";", encoding="utf-8")
 
-
+@lru_cache(maxsize=None)
 def load_einwohnerGiessm2020_24():
     return pd.read_csv("data/Einwohner_Giessmenge_joined_2020_2024.csv", sep=";", encoding="utf-8")
