@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  db:
+    # Wir nutzen das offizielle PostGIS-Image (Postgres + Geo-Erweiterungen)
+    image: postgis/postgis:15-3.3
+    container_name: gdk_postgres_db
+    restart: always
+    environment:
+      # Hier verknüpfen wir die Docker-Variablen mit deiner .env Datei
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    ports:
+      - "${DB_PORT}:5433"
+    volumes:
+      # Speichert die Daten dauerhaft auf deiner Festplatte, 
+      # damit sie beim Neustart nicht weg sind
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

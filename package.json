@@ -1,0 +1,18 @@
+{
+  "name": "gdk-pipeline-ba-erweiterung",
+  "version": "1.0.0",
+  "description": "Automatisierte Data Engineering Pipeline für die Berliner \r Bewässerungsdaten aus meiner Bachelorarbeit. Ziel ist es, \r die manuell aufbereiteten Datensätze durch eine vollständige, \r cloud-fähige ETL-Pipeline zu ersetzen.",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "db:up": "docker-compose up -d",
+    "db:init": "npm run db:up && timeout /t 10",
+    "pipeline:run": "python pipelines/load/db_connector.py",
+    "devStart": "npm run db:init && npm run pipeline:run"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
