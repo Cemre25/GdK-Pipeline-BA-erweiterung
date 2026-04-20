@@ -38,6 +38,7 @@ def load_baum_und_giessung():
     df = pd.read_csv(
         DATA_DIR / "df_merged_final.csv",
         sep=";", encoding="utf-8", decimal=",",
+        low_memory=False,   # verhindert DtypeWarning bei großen Dateien
     )
 
     # Typen korrigieren
@@ -46,6 +47,12 @@ def load_baum_und_giessung():
     df["timestamp"]                  = pd.to_datetime(df["timestamp"], errors="coerce")
     df["lng"]                        = pd.to_numeric(df["lng"], errors="coerce")
     df["lat"]                        = pd.to_numeric(df["lat"], errors="coerce")
+
+    # float → nullable Integer (wegen SMALLINT in PostgreSQL) ──
+    # pd.to_numeric gibt bei NaN-Werten float64 zurück (z.B. 1989.0)
+    # PostgreSQL SMALLINT akzeptiert keine Dezimalstellen → Int16 casten
+    df["pflanzjahr"]  = df["pflanzjahr"].astype("Int16")
+    df["standalter"]  = pd.to_numeric(df["standalter"], errors="coerce").astype("Int16")
 
     # ── 2a. TRANSFORM: baum ──────────────────────────────────
     df_baum = df[BAUM_COLS].drop_duplicates(subset="gisid").copy()
@@ -71,7 +78,7 @@ def load_baum_und_giessung():
     gdf_baum.to_postgis(
         name="baum",
         con=engine,
-        if_exists="replace",
+        if_exists="append",
         index=False,
     )
     print(f"✅ baum: {len(gdf_baum)} einzigartige Bäume geladen.")
@@ -90,7 +97,7 @@ def load_baum_und_giessung():
     df_giessung.to_sql(
         name="giessung",
         con=engine,
-        if_exists="replace",
+        if_exists="append",
         index=False,
     )
     print(f"✅ giessung: {len(df_giessung)} Gieß-Ereignisse geladen.")

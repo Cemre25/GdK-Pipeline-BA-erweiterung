@@ -74,7 +74,7 @@ def load_lor():
     gdf.to_postgis(
         name="lor_bezirksregion",
         con=engine,
-        if_exists="replace",
+        if_exists="append",
         index=False,
     )
 

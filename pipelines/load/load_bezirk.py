@@ -55,7 +55,7 @@ def load_bezirk():
     gdf.to_postgis(
         name="bezirk",
         con=engine,
-        if_exists="replace",   # oder "append" nach manuellem TRUNCATE
+        if_exists="append",   # oder "append" nach manuellem TRUNCATE
         index=False,
     )
 

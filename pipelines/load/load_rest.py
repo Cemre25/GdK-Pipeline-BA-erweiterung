@@ -43,7 +43,7 @@ def load_sozialindex():
             "di_2013","di_2022","dii_2013","dii_2022","diii_2013","diii_2022"]
     df = df[cols]
 
-    df.to_sql("sozialindex", engine, if_exists="replace", index=False)
+    df.to_sql("sozialindex", engine, if_exists="append", index=False)
     print(f"✅ sozialindex: {len(df)} LOR-Einträge geladen.")
 
 

@@ -66,7 +66,7 @@ def load_pumpen():
     gdf.to_postgis(
         name="pumpe",
         con=engine,
-        if_exists="replace",
+        if_exists="append",
         index=False,
     )
     print(f"✅ pumpe: {len(gdf)} Pumpen geladen.")

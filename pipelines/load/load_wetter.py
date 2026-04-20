@@ -38,7 +38,7 @@ def load_wetter_monat():
     df = df[["stations_id", "datum", "jahr", "monat", "niederschlag_mm", "temp_avg"]]
 
     # ── 3. LOAD ───────────────────────────────────────────────
-    df.to_sql("wetter_monatswert", engine, if_exists="replace", index=False)
+    df.to_sql("wetter_monatswert", engine, if_exists="append", index=False)
     print(f"✅ wetter_monatswert: {len(df)} Einträge geladen.")
 
 
